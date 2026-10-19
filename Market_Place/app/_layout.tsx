@@ -1,56 +1,85 @@
-import { useFonts } from 'expo-font';
-import { DarkTheme, DefaultTheme, Stack, ThemeProvider } from 'expo-router';
+
+import { useEffect, useState } from 'react';
+import { StyleSheet, View } from 'react-native';
+import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
-import { useEffect } from 'react';
 import 'react-native-reanimated';
 
-import { useColorScheme } from '@/components/useColorScheme';
+import CustomSplashScreen from '../src/components/SplashScreen';
 
 export {
-  // Catch any errors thrown by the Layout component.
   ErrorBoundary,
 } from 'expo-router';
 
 export const unstable_settings = {
-  // Ensure that reloading on `/modal` keeps a back button present.
   initialRouteName: '(tabs)',
 };
 
-// Prevent the splash screen from auto-hiding before asset loading is complete.
-SplashScreen.preventAutoHideAsync();
+SplashScreen.preventAutoHideAsync().catch(() => {});
 
 export default function RootLayout() {
-  const [loaded, error] = useFonts({
-    SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
-  });
-
-  // Expo Router uses Error Boundaries to catch errors in the navigation tree.
-  useEffect(() => {
-    if (error) throw error;
-  }, [error]);
+  const [showSplash, setShowSplash] = useState(true);
 
   useEffect(() => {
-    if (loaded) {
-      SplashScreen.hideAsync();
+    let timeout: ReturnType<typeof setTimeout>;
+
+    async function prepareApp() {
+      await SplashScreen.hideAsync();
+
+      timeout = setTimeout(() => {
+        setShowSplash(false);
+      }, 2200);
     }
-  }, [loaded]);
 
-  if (!loaded) {
-    return null;
-  }
+    prepareApp();
 
-  return <RootLayoutNav />;
-}
-
-function RootLayoutNav() {
-  const colorScheme = useColorScheme();
+    return () => {
+      clearTimeout(timeout);
+    };
+  }, []);
 
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
+    <View style={styles.container}>
+      <Stack
+        screenOptions={{
+          headerShown: false,
+        }}
+      >
+        <Stack.Screen name="(tabs)" />
+
+        <Stack.Screen name="login" />
+
+        <Stack.Screen name="cadastro" />
+
+        <Stack.Screen name="busca" />
+
+        <Stack.Screen name="produto/[id]" />
+
+        <Stack.Screen
+          name="modal"
+          options={{
+            presentation: 'modal',
+          }}
+        />
       </Stack>
-    </ThemeProvider>
+
+      {showSplash && (
+        <View style={styles.splashOverlay}>
+          <CustomSplashScreen />
+        </View>
+      )}
+    </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+
+  splashOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    zIndex: 10,
+    elevation: 10,
+  },
+});
