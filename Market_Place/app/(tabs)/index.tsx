@@ -8,6 +8,7 @@ import {
   View,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
 
 import Colors from '../../src/theme/Colors';
 import HomeStyle from '../../src/theme/HomeStyle';
@@ -56,6 +57,16 @@ const products = [
 
 export default function HomeScreen() {
   const [search, setSearch] = useState('');
+  const router = useRouter();
+
+  const filteredProducts = products.filter((product) => {
+    const term = search.trim().toLowerCase();
+
+    return (
+      product.name.toLowerCase().includes(term) ||
+      product.category.toLowerCase().includes(term)
+    );
+  });
 
   return (
     <View style={HomeStyle.container}>
@@ -163,57 +174,44 @@ export default function HomeScreen() {
           </View>
 
           <View style={HomeStyle.productsGrid}>
-            {products
-              .filter((product) => {
-                const term = search.trim().toLowerCase();
+            {filteredProducts.map((product) => (
+              <Pressable
+                key={product.id}
+                style={HomeStyle.productCard}
+                accessibilityRole="button"
+                accessibilityLabel={`${product.name}, ${product.price}`}
+                onPress={() =>
+                  router.push(`/produto/${product.id}`)
+                }
+              >
+                <View style={HomeStyle.productImage}>
+                  <Ionicons
+                    name={product.icon}
+                    size={48}
+                    color="#A3A3A3"
+                  />
+                </View>
 
-                return (
-                  product.name.toLowerCase().includes(term) ||
-                  product.category.toLowerCase().includes(term)
-                );
-              })
-              .map((product) => (
-                <Pressable
-                  key={product.id}
-                  style={HomeStyle.productCard}
-                  accessibilityRole="button"
-                  accessibilityLabel={`${product.name}, ${product.price}`}
-                >
-                  <View style={HomeStyle.productImage}>
-                    <Ionicons
-                      name={product.icon}
-                      size={48}
-                      color="#A3A3A3"
-                    />
-                  </View>
+                <Text style={HomeStyle.productCategory}>
+                  {product.category}
+                </Text>
 
-                  <Text style={HomeStyle.productCategory}>
-                    {product.category}
-                  </Text>
+                <Text style={HomeStyle.productName}>
+                  {product.name}
+                </Text>
 
-                  <Text style={HomeStyle.productName}>
-                    {product.name}
-                  </Text>
+                <Text style={HomeStyle.productPrice}>
+                  {product.price}
+                </Text>
 
-                  <Text style={HomeStyle.productPrice}>
-                    {product.price}
-                  </Text>
-
-                  <Text style={HomeStyle.productCondition}>
-                    {product.condition}
-                  </Text>
-                </Pressable>
-              ))}
+                <Text style={HomeStyle.productCondition}>
+                  {product.condition}
+                </Text>
+              </Pressable>
+            ))}
           </View>
 
-          {products.filter((product) => {
-            const term = search.trim().toLowerCase();
-
-            return (
-              product.name.toLowerCase().includes(term) ||
-              product.category.toLowerCase().includes(term)
-            );
-          }).length === 0 && (
+          {filteredProducts.length === 0 && (
             <Text
               style={{
                 color: Colors.textSecondary,
