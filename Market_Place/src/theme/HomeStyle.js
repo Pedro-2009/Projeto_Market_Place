@@ -56,10 +56,9 @@ const HomeStyle = StyleSheet.create({
   searchInput: {
     flex: 1,
     color: Colors.text,
-    fontSize: 14,
-    marginLeft: 10,
+    fontSize: 16,
+    marginLeft: 8,
     paddingVertical: 8,
-    outlineStyle: 'none',
   },
 
   section: {
